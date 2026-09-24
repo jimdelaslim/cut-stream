@@ -1,0 +1,18 @@
+# Secrets and live state - never commit
+.env
+.env.local
+data/
+*.bak
+*.orig
+
+# The real configs; only the .example versions are tracked
+livekit/livekit.yaml
+livekit/ingress.yaml
+livekit/compose.yaml
+livekit/room-key.sh
+livekit/ingress-req.json
+meet/compose.yaml
+
+# Build output
+node_modules/
+.next/

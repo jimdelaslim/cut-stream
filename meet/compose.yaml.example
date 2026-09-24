@@ -1,0 +1,11 @@
+services:
+  meet:
+    build: ./app
+    container_name: livekit-meet
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./app/.env.local
+    volumes:
+      - ./data:/data

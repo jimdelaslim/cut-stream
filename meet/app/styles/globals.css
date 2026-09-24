@@ -1,0 +1,354 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  background-color: #111;
+}
+
+html,
+body {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  max-width: 500px;
+  padding-inline: 2rem;
+}
+
+.header > img {
+  display: block;
+  margin: auto;
+  max-width: 100%;
+}
+
+.header > h2 {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 144%;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+footer {
+  width: 100%;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  background-color: var(--lk-bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+footer a,
+h2 a {
+  color: #ff6352;
+  text-decoration-color: #a33529;
+  text-underline-offset: 0.125em;
+}
+
+footer a:hover,
+h2 a {
+  text-decoration-color: #ff6352;
+}
+
+h2 a {
+  text-decoration: none;
+}
+
+/* ---- Review layout modes ---- */
+
+/* Focus: narrow the participant filmstrip so the feed gets the width. */
+.lk-room-container[data-layout='focus'] .lk-carousel {
+  max-width: 170px !important;
+  width: 170px !important;
+}
+
+/* Cinema: hide participants entirely, feed edge to edge. */
+.lk-room-container[data-layout='cinema'] .lk-carousel {
+  display: none !important;
+}
+.lk-room-container[data-layout='cinema'] .lk-focus-layout {
+  grid-template-columns: 1fr !important;
+}
+.lk-room-container[data-layout='cinema'] .lk-control-bar {
+  background: transparent !important;
+  border: none !important;
+  opacity: 0.25;
+  transition: opacity 0.2s;
+}
+.lk-room-container[data-layout='cinema'] .lk-control-bar:hover {
+  opacity: 1;
+}
+
+/* The tile focus toggle does nothing in the custom review layout. */
+.lk-focus-toggle-button {
+  display: none !important;
+}
+.lk-focus-toggle-button { display: none !important; }
+.cs-stage, .cs-stage .lk-participant-tile { width: 100%; height: 100%; }
+.cs-stage video { object-fit: contain !important; width: 100% !important; height: 100% !important; background: #000; }
+.cs-grid {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 400px));
+  grid-auto-rows: min-content;
+  justify-content: center;
+  align-content: center;
+  gap: 12px;
+  padding: 12px;
+  overflow-y: auto;
+}
+.cs-grid .lk-participant-tile { aspect-ratio: 16 / 9; width: 100%; }
+.cs-carousel .lk-participant-tile {
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden;
+  width: 120px !important;
+  height: 120px !important;
+  margin: 8px auto;
+}
+.cs-carousel .lk-participant-tile video { object-fit: cover !important; }
+.cs-people {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-end;
+  align-items: flex-end;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.cs-people .lk-participant-tile {
+  aspect-ratio: 16 / 9;
+  height: var(--tile-h, 240px);
+  max-height: 22vh;
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.cs-grid-stage {
+  height: 58%;
+  aspect-ratio: 16 / 9;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.cs-people .lk-participant-tile,
+.cs-grid-stage .lk-participant-tile {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ---- Narrow screens ---- */
+@media (max-width: 1100px), (max-height: 600px) {
+  .cs-controls {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+  .cs-controls > div {
+    position: static !important;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .cs-controls .lk-control-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cs-people .lk-participant-tile {
+    height: 84px !important;
+    max-height: none;
+  }
+  .cs-grid-stage {
+    height: auto !important;
+    width: 100%;
+  }
+}
+@media (max-width: 1100px), (max-height: 600px) {
+  .cs-carousel { display: flex; justify-content: center; }
+  .cs-carousel .lk-participant-tile {
+    width: 72px !important;
+    height: 72px !important;
+    margin: 6px !important;
+  }
+}
+
+@media (max-width: 1100px), (max-height: 600px) {
+  .cs-volume {
+    position: static !important;
+    order: 99;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* Landscape phones: stream must leave room for the people row */
+@media (max-height: 600px) {
+  .cs-grid-stage {
+    height: 62% !important;
+    width: auto !important;
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+  }
+  .cs-people {
+    flex: 0 0 auto;
+    max-height: 34%;
+  }
+  .cs-people .lk-participant-tile {
+    height: 64px !important;
+  }
+}
+
+/* ---- Admin page ---- */
+.cs-admin-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+.cs-admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.cs-admin-create { display: flex; gap: 0.5rem; }
+.cs-admin-create input { flex: 1; min-width: 0; }
+
+@media (max-width: 700px) {
+  .cs-admin-row {
+    grid-template-columns: 1fr auto;
+    row-gap: 0.15rem;
+  }
+  .cs-admin-row > span:first-child { grid-column: 1 / -1; }
+  .cs-admin-create { flex-direction: column; }
+  .cs-admin-create button { width: 100%; }
+  .cs-admin-head button { flex: 1; }
+}
+
+/* Self-hosted Inter replaces LiveKit's licensed TWK Everett */
+:root { --lk-font-family: var(--font-inter), system-ui, sans-serif; }
+body, button, input, textarea, select {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Beat LiveKit's stylesheet, which sets its own licensed face */
+html, body, button, input, textarea, select,
+.lk-room-container, .lk-button, .lk-participant-name, .lk-chat {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif !important;
+}
+/* The host-badge wrapper sits between the layout and the tile, so sizing
+   rules that used to target the tile must reach the wrapper too. */
+.cs-tile-wrap { width: 100%; height: 100%; }
+.cs-people .cs-tile-wrap { height: var(--tile-h, 240px); width: auto; aspect-ratio: 16 / 9; flex: 0 0 auto; }
+.cs-people .cs-tile-wrap .lk-participant-tile { width: 100%; height: 100%; }
+.cs-carousel .cs-tile-wrap { width: 120px; height: 120px; margin: 8px auto; }
+.cs-carousel .cs-tile-wrap .lk-participant-tile { width: 100% !important; height: 100% !important; margin: 0 !important; }
+@media (max-width: 1100px), (max-height: 600px) {
+  .cs-carousel .cs-tile-wrap { width: 72px; height: 72px; margin: 6px; }
+  .cs-people .cs-tile-wrap { height: 84px; }
+}
+/* Never let a tile grow past a sensible share of the window, whatever the
+   computed height says. */
+.cs-people .cs-tile-wrap { max-width: 26vw; max-height: 34vh; }
+/* Landscape phones: shrink the control bar so the picture gets the height */
+@media (max-height: 600px) {
+  .cs-controls { padding: 0.25rem !important; gap: 4px !important; }
+  .cs-controls .lk-button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.72rem !important;
+  }
+  .cs-controls .lk-button svg { width: 14px; height: 14px; }
+  .cs-controls .lk-button .lk-button-text { display: none; }
+  .cs-controls button { font-size: 0.7rem !important; padding: 0.25rem 0.45rem !important; }
+}
+/* The drawing layer sits over the stage and must never paint a background
+   or affect the stage's own sizing. */
+.cs-stage canvas,
+.cs-grid-stage canvas {
+  background: transparent !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+/* Chat panel: keep its contents inside the fixed-width column */
+.cs-chat-panel .lk-chat,
+.lk-chat {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.lk-chat-header {
+  text-align: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+}
+.lk-chat-form,
+.lk-chat-form-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.lk-chat-form { padding: 0.5rem; gap: 0.4rem; }
+/* The divider belongs to the whole control group, not just LiveKit's bar. */
+.cs-control-group { border-top: 1px solid var(--lk-border-color, #2c3138); padding-top: 0.5rem; }
+.cs-control-group .lk-control-bar { border-top: none !important; padding-top: 0 !important; }
+
+/* Phone: keep the people tiles 16:9 rather than letting flex stretch them. */
+@media (max-width: 1100px), (max-height: 600px) {
+  .cs-people .cs-tile-wrap {
+    aspect-ratio: 16 / 9 !important;
+    width: auto !important;
+    max-width: 45vw;
+  }
+  .cs-people {
+    gap: 8px;
+    padding: 0 8px;
+  }
+  .cs-control-group {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Portrait phones: the control group needs to wrap cleanly. */
+@media (max-width: 700px) {
+  .cs-control-group > button.lk-button { padding: 0.5rem 0.75rem; }
+}
+@media (max-height: 600px) {
+  .cs-people .cs-tile-wrap {
+    height: 22vh !important;
+    width: auto !important;
+    max-width: none;
+  }
+}
+/* Our buttons sit outside lk-control-bar. The buttons themselves already
+   match (44px, 10px/16px padding); they just sit 6px lower because the
+   control bar's own padding lifts its children. Nudge ours up to match. */
+.cs-control-group > button.lk-button {
+  align-self: center;
+  height: fit-content;
+  padding: 0.625rem 1rem;
+  position: relative;
+  top: -6px;
+}

@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STACK_DIR="/mnt/APPS-POOL/Stacks/livekit"
+API_KEY="APIyourkeyhere"
+LK_URL="https://livekit.example.com"
+WHIP_BASE="https://whip.example.com/w"
+
+ROOM="${1:-}"
+if [[ -z "$ROOM" ]]; then
+  echo "usage: $0 <room-name>" >&2
+  exit 1
+fi
+
+SLUG=$(printf '%s' "$ROOM" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s/^-+|-+$//g')
+[[ -z "$SLUG" ]] && { echo "error: no usable characters in '$ROOM'" >&2; exit 1; }
+
+SECRET=$(python3 -c "import yaml;print(list(yaml.safe_load(open('$STACK_DIR/livekit.yaml'))['keys'].values())[0])")
+
+lk() {
+  docker run --rm -i \
+    -e LIVEKIT_URL="$LK_URL" -e LIVEKIT_API_KEY="$API_KEY" -e LIVEKIT_API_SECRET="$SECRET" \
+    livekit/livekit-cli "$@"
+}
+
+extract_key() {
+  python3 -c '
+import sys, json
+raw = sys.stdin.read().strip()
+if not raw: sys.exit(0)
+try: d = json.loads(raw)
+except Exception: sys.exit(0)
+items = d.get("items", d) if isinstance(d, dict) else d
+if not isinstance(items, list): sys.exit(0)
+for i in items:
+    k = i.get("stream_key") or i.get("streamKey")
+    if k: print(k); break
+'
+}
+
+KEY=$(lk ingress list --room "$SLUG" --json 2>/dev/null | extract_key || true)
+
+if [[ -n "$KEY" ]]; then
+  STATUS="reused existing ingress"
+else
+  REQ=$(mktemp /tmp/ingress-XXXX.json)
+  cat > "$REQ" <<JSON
+{
+  "input_type": 1,
+  "name": "obs-$SLUG",
+  "room_name": "$SLUG",
+  "participant_identity": "edit-suite",
+  "participant_name": "Edit Suite",
+  "enable_transcoding": false
+}
+JSON
+  docker run --rm -v /tmp:/tmp -w /tmp \
+    -e LIVEKIT_URL="$LK_URL" -e LIVEKIT_API_KEY="$API_KEY" -e LIVEKIT_API_SECRET="$SECRET" \
+    livekit/livekit-cli ingress create "$(basename "$REQ")" >/dev/null 2>&1 || true
+  rm -f "$REQ"
+  sleep 1
+  KEY=$(lk ingress list --room "$SLUG" --json 2>/dev/null | extract_key || true)
+  [[ -z "$KEY" ]] && { echo "error: could not determine stream key" >&2; exit 1; }
+  STATUS="created new ingress"
+fi
+
+cat <<TXT
+
+  Room:        $SLUG   ($STATUS)
+  Join link:   https://meet.example.com/rooms/$SLUG
+
+  OBS -> Settings -> Stream
+    Service:       WHIP
+    Server:        $WHIP_BASE/$KEY
+    Bearer Token:  $KEY
+
+  Encoder: H.264, CBR, 6000 Kbps, 1s keyframes, B-frames 0
+
+TXT

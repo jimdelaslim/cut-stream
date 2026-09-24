@@ -1,0 +1,26 @@
+log_level: info
+api_key: APIyourkeyhere
+api_secret: <YOUR_SECRET>
+ws_url: ws://127.0.0.1:7880
+redis:
+  address: 127.0.0.1:6379
+whip_port: 8085
+http_relay_port: 9095
+rtmp_port: 1935
+health_port: 8086
+rtc_config:
+  use_external_ip: true
+  udp_port: 7885
+  interfaces:
+    includes:
+    - eth0
+  ips:
+    excludes:
+    - 172.16.0.0/12
+    - 100.64.0.0/10
+    - 192.168.21.0/24
+cpu_cost:
+  rtmp_cpu_cost: 2.0
+  whip_cpu_cost: 2.0
+  whip_bypass_transcoding_cpu_cost: 0.1
+  url_cpu_cost: 2.0

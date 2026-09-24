@@ -1,0 +1,8 @@
+{
+  "input_type": 1,
+  "name": "edit-suite",
+  "room_name": "review",
+  "participant_identity": "edit-suite",
+  "participant_name": "Edit Suite",
+  "enable_transcoding": false
+}
