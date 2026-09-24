@@ -86,6 +86,66 @@ Visit https://meet.example.com/admin, username admin, password from
 ADMIN_PASSWORD. That first login creates the account; the env var is ignored
 afterwards.
 
+### Using Dockge
+
+Dockge watches a stacks directory - /opt/stacks by default, or an ix dataset on
+TrueNAS (check the Dockge container's volume mounts with
+`docker inspect ix-dockge-dockge-1`). Create one folder per stack there and put
+compose.yaml alongside the yaml configs, since they're bind-mounted from the
+same directory.
+
+Two stacks: one for livekit (redis + livekit-server + ingress) and one for meet.
+
+The livekit stack must stay host-networked. Ingress needs it for WHIP media
+over UDP and silently fails to receive video in a bridge container.
+
+## Notes for reproducing this
+
+Things that aren't obvious from the configs, gathered the hard way:
+
+**Port choices.** whip_port is 8085 and http_relay_port is 9095 rather than the
+8080/9090 defaults, because those collide with almost everything else on a NAS.
+Check what's listening before deploying - a host-networked container that loses
+a port fight fails quietly:
+
+    ss -tulnp | grep -E ':(6379|7880|7881|7882|7885|8085|8086|9095)\b'
+
+**Single-port UDP.** rtc.udp_port is set, which makes LiveKit mux all media onto
+one port and ignore port_range_start/end. Two forwarded ports instead of ten
+thousand.
+
+**Redis binds to 127.0.0.1** because host networking would otherwise expose it
+on the LAN. Both livekit and ingress reach it on loopback.
+
+**The frontend is a fork of livekit-examples/meet** with the VideoConference
+prefab replaced by lib/ReviewRoom.tsx. The prefab's layout logic is sealed, so
+anything beyond CSS tweaks means composing from its parts (useTracks,
+FocusLayout, CarouselLayout, ControlBar, RoomAudioRenderer). Components that
+need LayoutContext - chat toggle included - must sit inside
+LayoutContextProvider or they throw at runtime.
+
+**Auth.** Sessions are HMAC-signed cookies (lib/session.ts), passwords are
+scrypt-hashed with per-user salts (lib/auth-store.ts). The admin account is
+seeded from ADMIN_PASSWORD on first login and the env var is ignored after
+that. Room passphrases stay readable in rooms.json deliberately, so the admin
+page can show them to you.
+
+**Host identity.** The passphrase gets someone into a room; the session cookie
+says who they are. connection-details checks whether the requester is signed in
+as the room's owner and puts an owner claim in the token, which drives the HOST
+badge and clear-all.
+
+**Drawing** syncs over LiveKit's data channel with coordinates normalised 0..1
+so a mark lands in the same place on a phone and a 4K monitor. Late joiners
+broadcast a sync request and whoever holds strokes replies.
+
+**Build caching.** Docker caches the COPY layer by checksum, so if a source edit
+lands after a build starts you get a stale image that looks fine. When a change
+seems not to apply, verify it's actually in the container before debugging the
+code:
+
+    docker exec livekit-meet grep -rl "some new string" .next/
+
 ## OBS settings
 
 Stream: Service WHIP, Server = the URL from the admin page, Bearer Token =
